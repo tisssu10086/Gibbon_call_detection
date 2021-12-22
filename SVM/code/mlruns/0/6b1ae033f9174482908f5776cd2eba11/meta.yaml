@@ -1,0 +1,15 @@
+artifact_uri: file:///home/yuheng/project/important/exper_crnn/SVM_test/code/mlruns/0/6b1ae033f9174482908f5776cd2eba11/artifacts
+end_time: 1639307696941
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+name: ''
+run_id: 6b1ae033f9174482908f5776cd2eba11
+run_uuid: 6b1ae033f9174482908f5776cd2eba11
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1639306494715
+status: 3
+tags: []
+user_id: yuheng
