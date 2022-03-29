@@ -91,7 +91,7 @@ dev.off()
 
 #################################################################
 #draw plot for crnn length comparison
-pdf(file="crnn_comparison.pdf",h=5,w=7)
+pdf(file="crnn_comparison_2.pdf",h=5,w=7)
 p2 = ggplot(data = result_summary_segment, mapping = aes(x = method, y = value_set, colour = metrics, group = metrics))
 p2 = p2 + geom_point(data = result_summary_segment[result_summary_segment['method'] == 'crnn2_threshold_result'
                                                    |result_summary_segment['method'] == 'crnn4_threshold_result'
@@ -135,6 +135,7 @@ level_name = c('crnn2_threshold_result' = '2',
 
 p2 = p2 + scale_x_discrete(labels = level_name, limits = level_order)
 p2 = p2 + scale_colour_discrete(name = 'Metrics' ,labels = c('Segment F-score', 'Segment precision', 'Segment recall'))
+p2 = p2 + ylim(0,100)
 p2
 dev.off()
 
@@ -289,10 +290,10 @@ simulation_draw = subset(simulation_draw, method == 'crnn_threshold_result'
 
 #add result for origin data
 origin_result = subset(result_summary_unite, method == 'crnn400_threshold_result'
-                         |method == 'lenet_hmm_bino_threshold_result'
-                         |method =='lenet_threshold_result'
-                         |method == 'svm_hmm_bino_result'
-                         |method == 'svm_svm_result')
+                       |method == 'lenet_hmm_bino_threshold_result'
+                       |method =='lenet_threshold_result'
+                       |method == 'svm_hmm_bino_result'
+                       |method == 'svm_svm_result')
 origin_result = subset(origin_result, metrics == 'segment F-score'| metrics == 'event F-score')
 origin_result[origin_result == 'crnn400_threshold_result'] = 'crnn_threshold_result'
 origin_result$simulation_config = 'Raw'
@@ -335,7 +336,7 @@ level_name = c('crop_rate_0.600' = '0.4',
                'stretch_rate_0.930' = '0.93',
                'stretch_rate_1.070' = '1.07',
                'stretch_rate_1.230' = '1.23')
-        
+
 p5 = p5 + scale_x_discrete(labels = level_name)
 p5 = p5 + labs(y = 'Percentage(%)', x = 'Simulation configuration')
 label_name = c('CRNN-400',
@@ -347,6 +348,66 @@ p5 = p5 + scale_colour_discrete(name = 'Methods' ,labels = label_name)
 p5
 dev.off()
 
+
+
+###################################################################
+#add data for proportional training
+proportion_data_summary = read.csv('../result/proportion_data_summary.csv', na.strings = c("", "NA"), stringsAsFactors = F)
+names(proportion_data_summary)[1] = 'method'
+names(proportion_data_summary)[2] = 'metrics'
+#fix typo 
+proportion_data_summary[proportion_data_summary == 'sgement recall'] = 'segment recall'
+proportion_data_summary[proportion_data_summary == 'sgement F-score'] = 'segment F-score'
+
+proportion_long = gather(proportion_data_summary, result_type, value_set, -method, -metrics, na.rm = T) 
+proportion_long = extract(proportion_long, col="method", 
+                          into = c("method","simulation_config"), regex="([[:alpha:]]+)_([a-zA-Z0-9_]+)")
+proportion_long = unite(proportion_long, col = method, method, result_type)
+proportion_long$simulation = 'Propotional train'
+proportion_long = subset(proportion_long, metrics == 'segment F-score'| metrics == 'event F-score')
+proportion_long = subset(proportion_long, method == 'crnn_threshold_result'
+                         | method == 'lenet_threshold_result'
+                         | method == 'lenet_hmm_bino_threshold_result'
+                         | method == 'svm_svm_result'
+                         | method == 'svm_hmm_bino_result')
+
+#add result for origin data
+origin_result = subset(result_summary_unite, method == 'crnn400_threshold_result'
+                       |method == 'lenet_hmm_bino_threshold_result'
+                       |method =='lenet_threshold_result'
+                       |method == 'svm_hmm_bino_result'
+                       |method == 'svm_svm_result')
+origin_result = subset(origin_result, metrics == 'segment F-score'| metrics == 'event F-score')
+origin_result[origin_result == 'crnn400_threshold_result'] = 'crnn_threshold_result'
+origin_result$simulation_config = '1.00'
+origin_result$simulation = 'Propotional train'
+
+#add original result
+proportion_long = merge(proportion_long, origin_result, all = TRUE)
+proportion_long$value_set = as.numeric(proportion_long$value_set) * 100
+proportion_long[proportion_long == 'segment F-score'] = 'Segment F-score'
+proportion_long[proportion_long == 'event F-score'] = 'Phrase F-score'
+
+pdf(file="results_proportional_train.pdf",h=5,w=7)
+p6 = ggplot(data = proportion_long, mapping = aes(x = reorder(simulation_config, -value_set), y = value_set, colour = method, group = method))
+p6 = p6 + geom_line() + geom_point()
+
+p6 = p6 + facet_wrap(~metrics, ncol = 2, scales = 'free_x')
+
+level_name = c('proportion_075' = '0.75',
+               'proportion_050' = '0.50',
+               'proportion_025' = '0.25')
+
+p6 = p6 + scale_x_discrete(labels = level_name)
+p6 = p6 + labs(y = 'Percentage(%)', x = 'The proportion of training and validatioin data')
+label_name = c('CRNN-400',
+               'LeNet+HMM(Bern)',
+               'LeNet',
+               'MFCC-SVM+HMM(Bern)',
+               'MFCC-SVM')
+p6 = p6 + scale_colour_discrete(name = 'Methods' ,labels = label_name)
+p6
+dev.off()
 
 
 
@@ -395,6 +456,12 @@ p2
 p3 = plot_grid(p2, p1, labels = c("A", "B"), rel_widths = c(2, 3), align = 'h')
 save_plot("data_description.pdf", p3)
 
+
+
+
+
+
+##########################################
 
 
 
