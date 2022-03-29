@@ -4,7 +4,7 @@ import os
 import pickle 
 import numpy as np
 from pathlib import Path
-
+import time
 
 import nn_function
 import dataset
@@ -48,6 +48,8 @@ class Network_CV:
                 self.pytorch_X_transform = dataset.Pytorch_data_transform()
                 self.pytorch_Y_transform = dataset.Pytorch_label_transform()
 
+                self.train_time = None
+                self.test_time = None
 
     def cv_train(self):
         '''train the CRNN with cross validation'''
@@ -72,6 +74,7 @@ class Network_CV:
         val_loss_curve_all = []
         val_accu_curve_all = []
         conf_matrix_set_all = []
+        train_time = 0
 
 
         for i in range(K_FOLD):
@@ -88,10 +91,14 @@ class Network_CV:
                                     train_test_split = train_test_split)
 
             print('trainning begin')
+            start_time = time.time()
             runing_loss_curve, runing_accu_curve, val_loss_curve, val_accu_curve, conf_matrix_set = dl_process.train_nn(nn_model = nn_model, 
                                                                                                                         train_data_label = train_set,
                                                                                                                         val_data_label = valid_set,
                                                                                                                         save_path = model_save_dic + str(i) + '.pt')
+            end_time = time.time()
+            train_time += end_time - start_time
+
             runing_loss_curve_all.append(runing_loss_curve)
             runing_accu_curve_all.append(runing_accu_curve)
             val_loss_curve_all.append(val_loss_curve)
@@ -124,7 +131,7 @@ class Network_CV:
         pickle.dump(conf_matrix_set_all, open(train_result_dic / Path('val_conf_matrix_set.p'), 'wb'))
         conf_matrix_set_all_sum = conf_matrix_set_all.sum(axis = 0)
         pickle.dump(conf_matrix_set_all_sum, open(train_result_dic / Path('val_conf_matrix_sum.p'), 'wb'))
-
+        self.train_time = train_time
 
 
     def cv_test(self):
@@ -151,6 +158,7 @@ class Network_CV:
         test_loss_all = []
         test_accu_all = []
         test_conf_matrix_all = []
+        test_time = 0
 
 
         for i in range(K_FOLD):
@@ -165,7 +173,11 @@ class Network_CV:
 
             print('test begin')
             #call the eval_crnn function
+            start_time = time.time()
             test_loss, test_correct, test_conf_matrix = dl_process.eval_nn(test_data_label = test_set, model_path = model_save_dic + str(i) + '.pt')
+            end_time = time.time()
+            test_time += end_time - start_time
+
             test_loss_all.append(test_loss)
             test_accu_all.append(test_correct)
             test_conf_matrix_all.append(test_conf_matrix)
@@ -180,7 +192,7 @@ class Network_CV:
         pickle.dump(test_conf_matrix_all, open(test_result_dic / Path('test_conf_matrix_set.p'), 'wb'))
         pickle.dump(test_conf_matrix_sum, open(test_result_dic / Path('test_conf_matrix_sum.p'), 'wb'))
         print(test_conf_matrix_sum)
-
+        self.test_time = test_time
 
 
 
@@ -243,11 +255,16 @@ class CV_evaluation:
                 self.pytorch_Y_transform = dataset.Pytorch_label_transform()
 
                 self.nn_result = None
-                self.threshold_result = None
-                self.average_result = None
-                self.hmm_bino_result = None
-                self.hmm_gmm_result = None
-                self.hmm_bino_threshold_result = None
+                if threshold_post_process:
+                    self.threshold_result = None
+                if average_post_process:
+                    self.average_result = None
+                if hmm_bino_post_process:
+                    self.hmm_bino_result = None
+                if hmm_gmm_post_process:
+                    self.hmm_gmm_result = None
+                if hmm_bino_threshold_post_process:
+                    self.hmm_bino_threshold_result = None
 
                 if threshold_post_process == False and hmm_bino_threshold_post_process == True:
                     print('error, hmm threshold process must come with threshold post process')
@@ -292,10 +309,13 @@ class CV_evaluation:
         if h_g_pp:
             metrics_hmm_gmm = label_matching.result_analysis(0, 'hit_match')
             model_path_h = model_path+ '/hmm_model'
+            h_g_pp_train_time = 0
+            h_g_pp_test_time = 0
         if h_b_t_pp:
             metrics_hmm_bino_threshold = label_matching.result_analysis(0, 'hit_match')
             model_path_h_t  = model_path + '/hmm_threshold_model'
-
+            h_b_t_pp_train_time = 0
+            h_b_t_pp_test_time = 0
 
         for i in range(K_FOLD):
             train_test_split = dataset.cross_valid(seed = seed, split_number = K_FOLD, fold_needed = i, file_dic = file_dic, 
@@ -334,8 +354,17 @@ class CV_evaluation:
                 if h_b_t_pp:
                     # no need for .p
                     hmm_threshold_postprocessing = post_process.hmm_post_process(model_path = model_path_h_t + str(i))
+
+                    h_b_t_pp_train_start = time.time()
                     hmm_threshold_postprocessing.train_hmm_bino(threshold_processsing.train_bino_predict, threshold_processsing.val_bino_predict)
+                    h_b_t_pp_train_end = time.time()
+                    h_b_t_pp_train_time += h_b_t_pp_train_end - h_b_t_pp_train_start
+
+                    h_b_t_pp_test_start = time.time()
                     hmm_threshold_postprocessing.predict_hmm_bino(threshold_processsing.test_bino_predict)
+                    h_b_t_pp_test_end = time.time()
+                    h_b_t_pp_test_time += h_b_t_pp_test_end - h_b_t_pp_test_start
+
                     metrics_hmm_bino_threshold(hmm_threshold_postprocessing.hmm_bino_pred_label['label'], hmm_threshold_postprocessing.hmm_bino_pred_label['pred'])
             if a_pp:
                 average_processing = post_process.average_postprocess(n_jobs = 6, model_path = model_path_a + str(i) + '.p')
@@ -350,8 +379,16 @@ class CV_evaluation:
                     hmm_post_processing.predict_hmm_bino(nn_predict.test_bino_predict)
                     metrics_hmm_bino(hmm_post_processing.hmm_bino_pred_label['label'], hmm_post_processing.hmm_bino_pred_label['pred'])
                 if h_g_pp:
+                    h_g_pp_train_start = time.time()
                     hmm_post_processing.train_hmm_gmm(nn_predict.train_raw_predict, nn_predict.val_raw_predict)
+                    h_g_pp_train_end = time.time()
+                    h_g_pp_train_time += h_g_pp_train_end - h_g_pp_train_start
+
+                    h_g_pp_test_start = time.time()
                     hmm_post_processing.predict_hmm_gmm(nn_predict.test_raw_predict)
+                    h_g_pp_test_end = time.time()
+                    h_g_pp_test_time += h_g_pp_test_end - h_g_pp_test_start
+
                     metrics_hmm_gmm(hmm_post_processing.hmm_gmm_pred_label['label'], hmm_post_processing.hmm_gmm_pred_label['pred'])
 
 
@@ -383,12 +420,16 @@ class CV_evaluation:
         if h_g_pp:
             metrics_hmm_gmm.result_process()
             self.hmm_gmm_result = metrics_hmm_gmm.result_summary
+            self.hmm_gmm_result['train_time'] = h_g_pp_train_time
+            self.hmm_gmm_result['test_time'] = h_g_pp_test_time
             if verbose:
                 print('metrics_hmm_gmm:',  self.hmm_gmm_result)
 
         if h_b_t_pp:
             metrics_hmm_bino_threshold.result_process()
             self.hmm_bino_threshold_result = metrics_hmm_bino_threshold.result_summary
+            self.hmm_bino_threshold_result['train_time'] = h_b_t_pp_train_time
+            self.hmm_bino_threshold_result['test_time'] = h_b_t_pp_test_time
             if verbose:
                 print('metrics_hmm_bino_threshold:', self.hmm_bino_threshold_result)
 

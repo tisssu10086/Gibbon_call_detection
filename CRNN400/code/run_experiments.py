@@ -4,7 +4,6 @@ import os
 import pickle 
 import numpy as np
 
-
 import nn_function
 import dataset
 import label_matching
@@ -42,7 +41,8 @@ cv_network_train_test = nn_cv.Network_CV(cv_file_dic = file_dic,
 cv_network_train_test.cv_train()
 cv_network_train_test.cv_test()
 
-
+print(cv_network_train_test.train_time)
+print(cv_network_train_test.test_time)
 
 
 #evaluate network with different postprocessing
@@ -87,7 +87,7 @@ for pitch_shift in  pitch_shift_set:
 
 print(pitch_shift_results)
 pickle.dump(pitch_shift_results, open('../crnn_results/pitch_shift_results.p', 'wb'))
-# pitch_shift_results = pickle.load(open('../crnn_results/pitch_shift_results.p', 'rb'))
+
 
 
 #time stretch experiments
@@ -108,7 +108,7 @@ for time_stretch in  time_stretch_set:
 
 print(time_stretch_results)
 pickle.dump(time_stretch_results, open('../crnn_results/time_stretch_results.p', 'wb'))
-# time_stretch_results = pickle.load(open('../crnn_results/time_stretch_results.p', 'rb'))
+
 
 
 
@@ -130,29 +130,13 @@ for crop in  crop_set:
 
 print(crop_results)
 pickle.dump(crop_results, open('../crnn_results/crop_results.p', 'wb'))
-# crop_results = pickle.load(open('../crnn_results/crop_results.p', 'rb'))
 
 
 
 
 
-# #volume change experiment
-# volume_change_results = {}
-# volume_change_set = [-10, -5, 5, 10]
-# for volume_change in volume_change_set:
-#     simulation_p = dataset.Hparams(overwritten = True, volume_change = volume_change)
-#     crnn_evaluation = nn_cv.CV_evaluation(cv_file_dic= file_dic, data_parameter= simulation_p, model_parameter= model_p,
-#                                             model_path= '../model/crnn_model', augment= dataset.Volume_changing(simulation_p))
 
-#     volume_change_results['volume_change_{:.3f}_nn_result'.format(volume_change)] = crnn_evaluation.nn_result
-#     volume_change_results['volume_change_{:.3f}_threshold_result'.format(volume_change)] = crnn_evaluation.threshold_result
-#     volume_change_results['volume_change_{:.3f}_average_result'.format(volume_change)] = crnn_evaluation.average_result
-#     volume_change_results['volume_change_{:.3f}_hmm_bino_result'.format(volume_change)] = crnn_evaluation.hmm_bino_result
-#     volume_change_results['volume_change_{:.3f}_hmm_gmm_result'.format(volume_change)] = crnn_evaluation.hmm_gmm_result
-#     volume_change_results['volume_change_{:.3f}_hmm_bino_threshold_result'.format(volume_change)] = crnn_evaluation.hmm_bino_threshold_result
 
-# print(volume_change_results)
-# pickle.dump(volume_change_results, open('../crnn_results/volume_change_results.p', 'wb'))
 
 
 
