@@ -236,39 +236,6 @@ class Time_stretch(Transforms):
 
 
 
-# class Volume_changing(Transforms):
-# # 不会对结果产生影响 由于标准化
-
-#     def __init__(self, cfg):
-#         self.cfg = cfg
-
-#     def __call__(self, audios: np.ndarray, data_name: Path, dataset_usage: str):
-
-#         data_save_dic = self.cfg.data_save_dic
-#         overwritten = self.cfg.overwritten
-#         vol_change = self.cfg.volume_change
-
-#         # different file dic for training(validation) data and testing data
-#         if dataset_usage == ('overlap_train'):
-#             save_dic = Path('overlap_data/vol_change_sound')
-#         elif dataset_usage == 'nonoverlap_pred':
-#             save_dic = Path('nonoverlap_data/vol_change_sound')
-#         else:
-#             print('data usage error')
-
-#         # check whether the dic been already produced 
-#         total_save_dic = Path(data_save_dic) / save_dic
-#         if not total_save_dic.exists():
-#             Path.mkdir(total_save_dic, parents = True)
-
-#         # check whether the file been already produced 
-#         total_save_path = total_save_dic / data_name.with_suffix('.p')
-#         if total_save_path.exists() and not overwritten:
-#             vol_change_sounds = pickle.load(open(total_save_path, 'rb'))
-#         else:
-#             vol_change_sounds = audios * np.power(10, vol_change / 20)
-#             pickle.dump(vol_change_sounds, open(total_save_path, 'wb'))
-#         return vol_change_sounds
 
 
 
@@ -583,51 +550,5 @@ def cross_valid(seed, split_number, fold_needed, file_dic: list, save_path: Path
 
 
 
-##########################################################################################
-
-# #test the code above
-
-# file_dic = []
-# for file_name in Path('../../label/processed_label').glob('*.data'):
-#     file_dic.append(file_name.stem)
-# #之后把这个给uncommon掉
-# # file_dic.sort()
-
-
-# train_test_split0 = cross_valid(seed = 42, split_number = 4, fold_needed = 0, file_dic = file_dic, 
-#                                 save_path = Path('../../label/cross_val_label_dic'), overwritten = False, verbose = False)
-
-
-
-# p = Hparams(overwritten = True)
-
-# data_set = gibbon_dataset(cfg = p, 
-#         dataset_type =  'test',
-#         dataset_usage= 'nonoverlap_pred',
-#         domain_transform = SpecImg_transform(p),
-#         augment = None,
-#         pytorch_X_transform = Pytorch_data_transform(), 
-#         pytorch_Y_transform = Pytorch_label_transform(), 
-#         train_test_split = train_test_split0)
-
-# data_set = gibbon_dataset(cfg = p, 
-#         dataset_type =  'train',
-#         dataset_usage= 'overlap_train',
-#         domain_transform = SpecImg_transform(p),
-#         augment = None,
-#         pytorch_X_transform = Pytorch_data_transform(), 
-#         pytorch_Y_transform = Pytorch_label_transform(), 
-#         train_test_split = train_test_split0)
-
-
-
-# data_set = gibbon_dataset(cfg = p, 
-#         dataset_type =  'valid',
-#         dataset_usage= 'nonoverlap_pred',
-#         domain_transform = SpecImg_transform(p),
-#         augment = None,
-#         pytorch_X_transform = Pytorch_data_transform(), 
-#         pytorch_Y_transform = Pytorch_label_transform(), 
-#         train_test_split = train_test_split0)
 
 
