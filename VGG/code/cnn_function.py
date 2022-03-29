@@ -37,23 +37,19 @@ class CNN(torch.nn.Module):
 
         self.conv5=torch.nn.Sequential(
             torch.nn.Conv2d(256, 512, kernel_size=3, stride=1, padding=1),
-            # torch.nn.BatchNorm2d(512),
             torch.nn.ReLU(),
             )
         self.conv6=torch.nn.Sequential(
             torch.nn.Conv2d(512, 512, kernel_size=3, stride=1, padding=1),
-            # torch.nn.BatchNorm2d(512),
             torch.nn.ReLU(),
             torch.nn.MaxPool2d(stride=2, kernel_size=2)
             )
         self.conv7=torch.nn.Sequential(
             torch.nn.Conv2d(512, 512, kernel_size=3, stride=1, padding=1),
-            # torch.nn.BatchNorm2d(512),
             torch.nn.ReLU(),
             )
         self.conv8=torch.nn.Sequential(
             torch.nn.Conv2d(512, 512, kernel_size=3, stride=1, padding=1),
-            # torch.nn.BatchNorm2d(512),
             torch.nn.ReLU(),
             torch.nn.MaxPool2d(stride=2, kernel_size=2)
             )

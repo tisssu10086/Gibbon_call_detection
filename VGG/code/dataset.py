@@ -127,15 +127,6 @@ class SpecImg_transform(Transforms):
             assert chunk_img.shape[1] == n_mels, chunk_img.shape[1]
             assert chunk_img.shape[2] == n_mels * seq_len, chunk_img.shape[2]
         else:
-            # # print('generate new img data')
-            # chunk_img = []
-            # for audio in audios:
-            #     mel_spec = librosa.feature.melspectrogram(audio, n_fft=fft_seq_len, hop_length=fft_hop_len, n_mels=n_mels, sr= sr, power=1.0, fmin = f_min, fmax=f_max)
-            #     log_mel_spec = librosa.amplitude_to_db(mel_spec)      
-            #     log_mel_spec = transform.resize(log_mel_spec, (n_mels, n_mels* seq_len)) ####resize from original size to (number of mel banks, number of mel banks * sequence length)(32,76) to (32,64)
-            #     log_mel_spec = (log_mel_spec- log_mel_spec.min())/(log_mel_spec.max() - log_mel_spec.min())
-            #     # print(log_mel_spec.shape)
-            #     chunk_img.append(log_mel_spec)
             chunk_img = Parallel(n_jobs= n_jobs)(delayed(self.generate_spectrogram)(audio) for audio in audios)
             chunk_img = np.asarray(chunk_img)
             pickle.dump(chunk_img, open(total_save_path, 'wb'))
@@ -182,10 +173,6 @@ class Pitch_shift(Transforms):
         if total_save_path.exists() and not overwritten:
             shift_sounds = pickle.load(open(total_save_path, 'rb'))
         else:
-            # shift_sounds = []
-            # for audio in audios:
-            #     shift_audio = librosa.effects.pitch_shift(audio, sr, shift_step)
-            #     shift_sounds.append(shift_audio)
             shift_sounds = Parallel(n_jobs = n_jobs)(delayed(librosa.effects.pitch_shift)(audio, sr, shift_step) for audio in audios)
             shift_sounds = np.asarray(shift_sounds)
             pickle.dump(shift_sounds, open(total_save_path, 'wb'))
@@ -224,10 +211,6 @@ class Time_stretch(Transforms):
         if total_save_path.exists() and not overwritten:
             stretch_sounds = pickle.load(open(total_save_path, 'rb'))
         else:
-            # stretch_sounds = []
-            # for audio in audios:
-            #     stretch_audio = librosa.effects.time_stretch(audio, stretch_rate)
-            #     stretch_sounds.append(stretch_audio)
             stretch_sounds = Parallel(n_jobs = n_jobs)(delayed(librosa.effects.time_stretch)(audio, stretch_rate) for audio in audios)
             stretch_sounds = np.asarray(stretch_sounds)
             pickle.dump(stretch_sounds, open(total_save_path, 'wb'))
@@ -236,39 +219,7 @@ class Time_stretch(Transforms):
 
 
 
-# class Volume_changing(Transforms):
-# # 不会对结果产生影响 由于标准化
 
-#     def __init__(self, cfg):
-#         self.cfg = cfg
-
-#     def __call__(self, audios: np.ndarray, data_name: Path, dataset_usage: str):
-
-#         data_save_dic = self.cfg.data_save_dic
-#         overwritten = self.cfg.overwritten
-#         vol_change = self.cfg.volume_change
-
-#         # different file dic for training(validation) data and testing data
-#         if dataset_usage == ('overlap_train'):
-#             save_dic = Path('overlap_data/vol_change_sound')
-#         elif dataset_usage == 'nonoverlap_pred':
-#             save_dic = Path('nonoverlap_data/vol_change_sound')
-#         else:
-#             print('data usage error')
-
-#         # check whether the dic been already produced 
-#         total_save_dic = Path(data_save_dic) / save_dic
-#         if not total_save_dic.exists():
-#             Path.mkdir(total_save_dic, parents = True)
-
-#         # check whether the file been already produced 
-#         total_save_path = total_save_dic / data_name.with_suffix('.p')
-#         if total_save_path.exists() and not overwritten:
-#             vol_change_sounds = pickle.load(open(total_save_path, 'rb'))
-#         else:
-#             vol_change_sounds = audios * np.power(10, vol_change / 20)
-#             pickle.dump(vol_change_sounds, open(total_save_path, 'wb'))
-#         return vol_change_sounds
 
 
 
@@ -580,54 +531,5 @@ def cross_valid(seed, split_number, fold_needed, file_dic: list, save_path: Path
 
 
 
-
-
-
-##########################################################################################
-
-# #test the code above
-
-# file_dic = []
-# for file_name in Path('../../label/processed_label').glob('*.data'):
-#     file_dic.append(file_name.stem)
-# #之后把这个给uncommon掉
-# # file_dic.sort()
-
-
-# train_test_split0 = cross_valid(seed = 42, split_number = 4, fold_needed = 0, file_dic = file_dic, 
-#                                 save_path = Path('../../label/cross_val_label_dic'), overwritten = False, verbose = False)
-
-
-
-# p = Hparams(overwritten = True)
-
-# data_set = gibbon_dataset(cfg = p, 
-#         dataset_type =  'test',
-#         dataset_usage= 'nonoverlap_pred',
-#         domain_transform = SpecImg_transform(p),
-#         augment = None,
-#         pytorch_X_transform = Pytorch_data_transform(), 
-#         pytorch_Y_transform = Pytorch_label_transform(), 
-#         train_test_split = train_test_split0)
-
-# data_set = gibbon_dataset(cfg = p, 
-#         dataset_type =  'train',
-#         dataset_usage= 'overlap_train',
-#         domain_transform = SpecImg_transform(p),
-#         augment = None,
-#         pytorch_X_transform = Pytorch_data_transform(), 
-#         pytorch_Y_transform = Pytorch_label_transform(), 
-#         train_test_split = train_test_split0)
-
-
-
-# data_set = gibbon_dataset(cfg = p, 
-#         dataset_type =  'valid',
-#         dataset_usage= 'nonoverlap_pred',
-#         domain_transform = SpecImg_transform(p),
-#         augment = None,
-#         pytorch_X_transform = Pytorch_data_transform(), 
-#         pytorch_Y_transform = Pytorch_label_transform(), 
-#         train_test_split = train_test_split0)
 
 

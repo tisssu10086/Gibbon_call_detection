@@ -98,25 +98,6 @@ class EarlyStopping:
         self.val_loss_min = val_loss
         self.val_accu = val_accu
 
-# pytorch has bug with apply() function so we do not use manul initilizatioin this time
-# #kaiming uniform initializer
-# def weights_init(m):
-#     classname = m.__class__.__name__
-#     if classname.find('Conv2d') != -1:
-#         init.kaiming_uniform_(m.weight.data)
-#         init.constant_(m.bias.data, 0.0)
-#     elif classname.find('Linear') != -1:
-#         init.kaiming_uniform_(m.weight.data)
-#         init.constant_(m.bias.data, 0.0)
-#     elif classname.find('GRU') != -1:
-#         init.kaiming_uniform_(m.weight_ih_l[0].data)
-#         init.kaiming_uniform_(m.weight_hh_l[0].data)
-#         init.kaiming_uniform_(m.bias_ih_l[0].data)
-#         init.kaiming_uniform_(m.bias_hh_l[0].data)
-#         init.kaiming_uniform_(m.weight_ih_l[1].data)
-#         init.kaiming_uniform_(m.weight_hh_l[1].data)
-#         init.kaiming_uniform_(m.bias_ih_l[1].data)
-#         init.kaiming_uniform_(m.bias_hh_l[1].data)
 
 
 
