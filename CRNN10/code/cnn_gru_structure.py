@@ -80,7 +80,7 @@ class RNN(torch.nn.Module):
 
 # output: [b,s,class_num]
 class CRNN(torch.nn.Module):
-    def __init__(self, class_num, hidden_unit=256):
+    def __init__(self, class_num=1, hidden_unit=256):
         super(CRNN, self).__init__()
         self.cnn = torch.nn.Sequential()
         self.cnn.add_module('vgg_16', Vgg_16())
