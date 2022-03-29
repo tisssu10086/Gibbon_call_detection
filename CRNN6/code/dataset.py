@@ -583,51 +583,6 @@ def cross_valid(seed, split_number, fold_needed, file_dic: list, save_path: Path
 
 
 
-##########################################################################################
 
-# #test the code above
-
-# file_dic = []
-# for file_name in Path('../../label/processed_label').glob('*.data'):
-#     file_dic.append(file_name.stem)
-# #之后把这个给uncommon掉
-# # file_dic.sort()
-
-
-# train_test_split0 = cross_valid(seed = 42, split_number = 4, fold_needed = 0, file_dic = file_dic, 
-#                                 save_path = Path('../../label/cross_val_label_dic'), overwritten = False, verbose = False)
-
-
-
-# p = Hparams(overwritten = True)
-
-# data_set = gibbon_dataset(cfg = p, 
-#         dataset_type =  'test',
-#         dataset_usage= 'nonoverlap_pred',
-#         domain_transform = SpecImg_transform(p),
-#         augment = None,
-#         pytorch_X_transform = Pytorch_data_transform(), 
-#         pytorch_Y_transform = Pytorch_label_transform(), 
-#         train_test_split = train_test_split0)
-
-# data_set = gibbon_dataset(cfg = p, 
-#         dataset_type =  'train',
-#         dataset_usage= 'overlap_train',
-#         domain_transform = SpecImg_transform(p),
-#         augment = None,
-#         pytorch_X_transform = Pytorch_data_transform(), 
-#         pytorch_Y_transform = Pytorch_label_transform(), 
-#         train_test_split = train_test_split0)
-
-
-
-# data_set = gibbon_dataset(cfg = p, 
-#         dataset_type =  'valid',
-#         dataset_usage= 'nonoverlap_pred',
-#         domain_transform = SpecImg_transform(p),
-#         augment = None,
-#         pytorch_X_transform = Pytorch_data_transform(), 
-#         pytorch_Y_transform = Pytorch_label_transform(), 
-#         train_test_split = train_test_split0)
 
 
