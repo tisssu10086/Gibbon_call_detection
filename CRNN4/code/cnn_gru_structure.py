@@ -41,17 +41,13 @@ class Vgg_16(torch.nn.Module):
         x = self.pooling3(x)
         x = self.convolution5(x)
         x = F.relu(self.BatchNorm1(x), inplace=True)
-        # x = F.relu(x)
         x = self.convolution6(x)
         x = F.relu(self.BatchNorm2(x), inplace=True)
-        # x = F.relu(x)
         x = self.pooling4(x)
         x = self.convolution7(x)
         x = F.relu(self.BatchNorm3(x), inplace=True)
-        # x = F.relu(x)
         x = self.convolution8(x)
         x = F.relu(self.BatchNorm4(x), inplace=True)
-        # x = F.relu(x)
         x = self.pooling5(x)
         return x  # batch * 512 * 1 * seq_len
 
@@ -68,9 +64,6 @@ class RNN(torch.nn.Module):
     def forward(self, x):
         x = self.Bidirectional_GRU1(x)   # GRU output: output, hidden state(h_n)
         # b, T, h = x[0].size()   # x[0]: (batch, seq_len, num_directions * hidden_size)
-        # x = self.embedding1(x[0].view(b * T, h))  # pytorch view() reshape as [b * T, nOut]
-        # x = x.view(b, T, -1)  # [b, seq_len, 512]
-        # x = self.Bidirectional_GRU2(x)
         b, T, h = x[0].size()
         # print(x[0].size())
         x = self.embedding1(x[0].contiguous().view(b * T, h))
@@ -80,7 +73,7 @@ class RNN(torch.nn.Module):
 
 # output: [b,s,class_num]
 class CRNN(torch.nn.Module):
-    def __init__(self, class_num, hidden_unit=256):
+    def __init__(self, class_num = 1, hidden_unit=256):
         super(CRNN, self).__init__()
         self.cnn = torch.nn.Sequential()
         self.cnn.add_module('vgg_16', Vgg_16())
@@ -94,7 +87,5 @@ class CRNN(torch.nn.Module):
         assert h == 1   # "the height of conv must be 1"
         x = x.squeeze(2)  # remove h dimension, b *512 * width
         x = x.permute(0, 2, 1)  # [b, w, c] = [batch, seq_len, input_size]
-        # print('rnn input size', x.size())
-        # x = x.transpose(1, 2)
         x = self.rnn(x)
         return x
