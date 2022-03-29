@@ -5,15 +5,12 @@ import pickle
 import numpy as np
 from pathlib import Path
 
-
 import nn_function
 import dataset
 import label_matching
 import post_process
 import cnn_function
 import nn_cv
-
-
 
 
 
@@ -30,7 +27,7 @@ file_dic.sort()
 data_p = dataset.Hparams(overwritten = False, seq_len = 1, train_hop_len = 1, test_hop_len = 1)
 model_p = nn_function.Hparams(num_epochs = 30, 
                             batch_size = 1024, 
-                            learning_rate = 1e-4, 
+                            learning_rate = 1e-3, 
                             lr_decay_step_size = 30, 
                             lr_decay_rate =  1,
                             weight_decay_rate = 1e-1,
@@ -55,7 +52,8 @@ cv_network_train_test = nn_cv.Network_CV(cv_file_dic= file_dic,
 cv_network_train_test.cv_train()
 cv_network_train_test.cv_test()
 
-
+print(cv_network_train_test.train_time)
+print(cv_network_train_test.test_time)
 
 
 #evaluate network with different postprocessing
@@ -70,7 +68,6 @@ lenet_result_summary['hmm_bino_result'] = lenet_evaluation.hmm_bino_result
 lenet_result_summary['hmm_gmm_result'] = lenet_evaluation.hmm_gmm_result
 lenet_result_summary['hmm_bino_threshold_result'] = lenet_evaluation.hmm_bino_threshold_result
 pickle.dump(lenet_result_summary, open('../results/lenet_results_summary.p', 'wb'))
-
 
 
 
@@ -139,30 +136,7 @@ for crop in  crop_set:
 
 print(crop_results)
 pickle.dump(crop_results, open('../results/crop_results.p', 'wb'))
-# crop_results = pickle.load(open('../results/crop_results.p', 'rb'))
 
-
-
-
-
-# #volume change experiments
-# volume_change_results = {}
-# volume_change_set = [-10, -5, 5, 10]
-# for volume_change in  volume_change_set:
-#     simulation_p = dataset.Hparams(overwritten = True, volume_change = volume_change, seq_len = 1, train_hop_len = 1, test_hop_len = 1)
-#     lenet_evaluation = nn_cv.CV_evaluation(cv_file_dic = file_dic, data_parameter = simulation_p, model_parameter = model_p, 
-#                                             model_path = '../model/cnn_model', augment= dataset.Volume_changing(simulation_p))
-#     lenet_evaluation.cv_nn_evaluate()
-
-#     volume_change_results['volume_change_{:.3f}_nn_result'.format(volume_change)] = lenet_evaluation.nn_result
-#     volume_change_results['volume_change_{:.3f}_threshold_result'.format(volume_change)] = lenet_evaluation.threshold_result
-#     volume_change_results['volume_change_{:.3f}_average_result'.format(volume_change)] = lenet_evaluation.average_result
-#     volume_change_results['volume_change_{:.3f}_hmm_bino_result'.format(volume_change)] = lenet_evaluation.hmm_bino_result
-#     volume_change_results['volume_change_{:.3f}_hmm_gmm_result'.format(volume_change)] = lenet_evaluation.hmm_gmm_result
-#     volume_change_results['volume_change_{:.3f}_hmm_bino_threshold_result'.format(volume_change)] = lenet_evaluation.hmm_bino_threshold_result
-
-# print(volume_change_results)
-# pickle.dump(volume_change_results, open('../results/volume_change_results.p', 'wb'))
 
 
 
